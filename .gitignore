@@ -129,5 +129,6 @@ dmypy.json
 .pyre/
 
 #Folder
-./Data
-./Output
+/Data
+/output
+/Output
