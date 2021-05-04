@@ -92,6 +92,8 @@ pred = test[(test['ball']==5.6) ][['match_id','innings','venue','batting_team','
 
 
 """
+To do:
+    
 strike rates -
 boundary/innings -
 batsman stike rate in first 15 balls - 
@@ -106,6 +108,7 @@ quanitfy attacking batting - batsman sr / match sr ?
 quantify wicket taking - bowlers sr / match sr ?
 quantify econmoical - bowler eco / match eco ?
 
+prepare test/train data in input format
 
 """
 
@@ -118,23 +121,38 @@ R squared
 -- venues, innings and bowling team 3.4677736945734274
 """
 
-
+"""
 
 -- {batsman:
     avg score in first 15 balls : s,
     avg match scores : m,
     avg bounday in first 15 balls : b,
-    sr in first 15 ballls :  sr
+    sr in first 15 ballls :  sr,
+    boundary scores : bdry_scr
     }
     
 --  {bowler :
     
      }
-    
-data['striker_runs'] = 
-data['striker_balls'] =  
-data['striker_4s'] = 
-data['striker_6s'] = 
+   
+"""
+data['striker_runs'] = data.groupby(['match_id','innings','batting_team','striker'])['runs_off_bat'].transform(lambda x : x.cumsum())
+data['striker_balls_faced'] = data.groupby(['match_id','innings','batting_team','striker']).cumcount() + 1
+data['wides_edit'] = data['wides'].apply(lambda x : 1 if x >0 else 0 )
+data['wides_cumulative'] = data.groupby(['match_id','innings','batting_team','striker'])['wides_edit'].cumsum()
+data['4s_ind'] = data['runs_off_bat'].apply(lambda x : 1 if x==4  else 0)
+data['6s_ind'] = data['runs_off_bat'].apply(lambda x : 1 if x ==6 else 0)
+data['boundary'] = data['4s_ind'] + data['6s_ind']
+
+# actual balls faced as wides was getting counted in balls faced
+data['striker_balls_faced'] = data['striker_balls_faced'] - data['wides_cumulative']
+
+data['striker_boundaries'] = data.groupby(['match_id','innings','batting_team','striker'])['boundary'].cumsum()
+data['striker_4s'] = data.groupby(['match_id','innings','batting_team','striker'])['4s_ind'].cumsum()
+data['striker_6s'] = data.groupby(['match_id','innings','batting_team','striker'])['6s_ind'].cumsum()
+
+
+g =  data.groupby(['match_id','innings','batting_team','striker']).cumcount() + 1
 
 
 
